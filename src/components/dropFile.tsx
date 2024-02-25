@@ -39,15 +39,14 @@ export default function DropFile(){
                 const fileType = handleFileType(file);
                 switch (fileType) {
                     case 0:
-                        newImgElements.push(<img key={index} src={pdf_icon} draggable="true" alt="PDF" />);
+                        newImgElements.push(<img key={index} src={pdf_icon} draggable="true" />);
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} draggable="true" />);
+                            newImgElements.push(<img key={index} src={imgData} draggable="true" className="rounded-lg h-[180px] w-[150px]"/>);
                             setImgElements([...newImgElements]);
-                            console.log('processed')
                         };
                         reader.readAsDataURL(file);
                         break;
@@ -57,7 +56,7 @@ export default function DropFile(){
             setFiles(event.dataTransfer.files);
         }
     };
-
+        
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const selectedFiles = event.target.files;
@@ -67,13 +66,14 @@ export default function DropFile(){
                 const fileType = handleFileType(file);
                 switch (fileType) {
                     case 0:
-                        newImgElements.push(<img key={index} src={pdf_icon} draggable="true" alt="PDF" />);
+                        newImgElements.push(<img key={index} src={pdf_icon} draggable="true" className="rounded-lg h-[180px] w-[150px]"/>);
+                        alert(newImgElements[index])
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} draggable="true"/>);
+                            newImgElements.push(<img key={index} src={imgData} draggable="true" className="rounded-lg h-[180px] w-[150px]"/>);
                             setImgElements([...newImgElements]);
                         };
                         reader.readAsDataURL(file);
@@ -97,9 +97,10 @@ export default function DropFile(){
                     <ul className="w-full h-full p-5 grid grid-cols-4 gap-8 no-scrollbar overflow-scroll overflow-x-hidden">
                         {Array.from(files).map((file: any, id: number) => {
                             return (
-                                <li key={id} className="flex flex-col items-center justify-center break-all">
+                                <li key={id} className="relative flex flex-col items-center justify-center h-fit">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
                                     {imgElements[id]} {/* Render the corresponding imgElement */}
-                                    {file.name}
+                                    {file.name.length > 14 ? file.name.slice(0, 14) + "..." : file.name}
                                 </li>
                             );
                         })}
