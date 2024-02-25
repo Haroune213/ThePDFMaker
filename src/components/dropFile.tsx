@@ -2,8 +2,6 @@ import "./../App.css"
 import drop_icon from "../assets/drop.png"
 import pdf_icon from "../assets/pdf.png"
 import { useState,useRef } from "react"
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
 
 
 export default function DropFile(){
@@ -91,6 +89,12 @@ export default function DropFile(){
         }
     }
 
+    const removeElement = (elem_id: number) =>{
+            setFiles((files: File[] | null) => files?.filter((_, index) => index !== elem_id));
+        setImgElements(imgElements => imgElements.filter((_, index) => index !== elem_id));
+
+    }
+
 
     return (
         <div 
@@ -105,7 +109,7 @@ export default function DropFile(){
                             return (
                                 <li key={id} className="relative flex flex-col items-center justify-center h-fit">
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
-                                    <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2">X</button> 
+                                    <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{removeElement(id)}}>X</button> 
                                     {imgElements[id]} {/* Render the corresponding imgElement */}
                                     {file.name.length > 14 ? file.name.slice(0, 14) + "..." : file.name}
                                 </li>
