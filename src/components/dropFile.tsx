@@ -4,8 +4,11 @@ import pdf_icon from "../assets/pdf.png"
 import { useState,useRef } from "react"
 
 
+
+
+
 export default function DropFile(){
-    const[files, setFiles]=  useState<any | null>(null);
+    const[files, setFiles]=   useState<File[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
     const [imgElements, setImgElements] = useState<(JSX.Element | null)[]>([]);
 
@@ -57,14 +60,14 @@ export default function DropFile(){
                         break;
                 }
             });
-            setFiles(event.dataTransfer.files);
+            setFiles(Array.from(event.dataTransfer.files));
         }
     };
         
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const selectedFiles = event.target.files;
-            setFiles(selectedFiles);
+            setFiles(Array.from(selectedFiles));
             const newImgElements: (JSX.Element | null)[] = [];
             Array.from(selectedFiles).forEach((file, index) => {
                 const fileType = handleFileType(file);
@@ -91,9 +94,15 @@ export default function DropFile(){
         }
     }
     
-    const removeElement = (elem_id: number) =>{
+    const removeElement = (elem_id:number) => {
         setImgElements(imgElements => imgElements.filter((_, index) => index !== elem_id));
-    }
+
+
+        setFiles((oldValues:any )=> {
+          return oldValues.filter((_:any, i:number) => i !== elem_id)
+        })
+
+      }
 
 
     return (
@@ -102,19 +111,19 @@ export default function DropFile(){
             onDrop={handleDrop}
             className="m-5 text-white w-[60vw] h-[400px] bg-black bg-opacity-[40%] rounded-xl border-slate-100 border-dashed border-2 hover:border-slate-500 border-spacing-1 transition-all shadow-xl shadow-slate-1000 flex items-center justify-center flex-col "
         >
-            {files ? (
+            {files.length>0 ? (
                 <div className="w-full h-full p-5 bg-[rgba(0,0,0,0.1)] transition-all">
                     <ul className="w-full h-full p-5 grid grid-cols-4 gap-8 no-scrollbar overflow-scroll overflow-x-hidden">
                         {Array.from(files).map((file: any, id: number) => {
                             return (
-                                imgElements[id] && (
+                                
                                 <li key={id} className="relative flex flex-col items-center justify-center h-fit">
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
-                                    <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{removeElement(id)}}>X</button> 
+                                    <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{ removeElement(id) }}>X</button> 
                                     {imgElements[id]} {/* Render the corresponding imgElement */}
                                     {file.name.length > 14 ? file.name.slice(0, 14) + "..." : file.name}
                                 </li>
-                                )
+                                
                             );
                         })}
                     </ul>
