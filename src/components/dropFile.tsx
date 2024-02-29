@@ -11,8 +11,9 @@ export default function DropFile(){
     const[files, setFiles]=   useState<File[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
     const [imgElements, setImgElements] = useState<(JSX.Element | null)[]>([]);
-
-
+    const dragItem = useRef<any>(null)
+    const dragOverItem= useRef<any>(null)
+    var isItemSelected= 0 
 
     function handleFileType(file: File): number {
         const fileType = file.type;
@@ -36,6 +37,7 @@ export default function DropFile(){
     
     const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault()
+        if(isItemSelected==0){
 
         if (event.dataTransfer.files) {
             const newImgElements: (JSX.Element | null)[] = [];
@@ -44,7 +46,7 @@ export default function DropFile(){
                 switch (fileType) {
                     case 0:
                         newImgElements.push(
-                            <img src={pdf_icon} draggable="true"  className="rounded-lg h-[180px] w-[150px]"/>
+                            <img src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"/>
                             )
                         setImgElements([...newImgElements]);
                         break;
@@ -52,7 +54,7 @@ export default function DropFile(){
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} draggable="true" className="rounded-lg h-[180px] w-[150px]"/>);
+                            newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
                             setImgElements([...newImgElements]);
                         };
                         reader.readAsDataURL(file);
@@ -61,7 +63,7 @@ export default function DropFile(){
                 }
             });
             setFiles(Array.from(event.dataTransfer.files));
-        }
+        }}
     };
         
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +76,7 @@ export default function DropFile(){
                 switch (fileType) {
                     case 0:
                         newImgElements.push(
-                            <img src={pdf_icon} draggable="true"  className="rounded-lg h-[180px] w-[150px]"/>
+                            <img src={pdf_icon}  className="rounded-lg h-[180px] w-[150px]"/>
                             )
                         setImgElements([...newImgElements]);
                         break;
@@ -82,7 +84,7 @@ export default function DropFile(){
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} draggable="true" className="rounded-lg h-[180px] w-[150px]"/>);
+                            newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
                             setImgElements([...newImgElements]);
                         };
                         reader.readAsDataURL(file);
@@ -93,7 +95,31 @@ export default function DropFile(){
             });
         }
     }
-    
+
+
+    const handleSort = () =>{
+        isItemSelected=1
+        let _files = [...files]
+        let _imgElements= [...imgElements]
+
+        const draggedItemContent =_files.splice(dragItem.current, 1)[0]
+        _files.splice(dragOverItem.current,0, draggedItemContent)
+
+
+        const draggedImgContent =_imgElements.splice(dragItem.current, 1)[0]
+        _imgElements.splice(dragOverItem.current,0, draggedImgContent)
+
+        dragItem.current= null
+        dragOverItem.current= null
+
+        setFiles(_files)
+        setImgElements(_imgElements)
+
+        isItemSelected=0
+    }
+
+
+
     const removeElement = (elem_id:number) => {
         setImgElements(imgElements => imgElements.filter((_, index) => index !== elem_id));
 
@@ -106,6 +132,9 @@ export default function DropFile(){
 
 
     return (
+
+
+        
         <div 
             onDragOver={handleDragOver}
             onDrop={handleDrop}
@@ -117,10 +146,10 @@ export default function DropFile(){
                         {Array.from(files).map((file: any, id: number) => {
                             return (
                                 
-                                <li key={id} className="relative flex flex-col items-center justify-center h-fit">
+                                <li key={id} className="relative flex flex-col items-center justify-center h-fit transition-all" draggable onDragStart={(e)=>dragItem.current=id}  onDragEnter={(e)=>{dragOverItem.current=id; isItemSelected=1}} onDragOver={(e)=>e.preventDefault} onDragEnd={handleSort}>
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
                                     <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{ removeElement(id) }}>X</button> 
-                                    {imgElements[id]} {/* Render the corresponding imgElement */}
+                                    {imgElements[id]} {}
                                     {file.name.length > 14 ? file.name.slice(0, 14) + "..." : file.name}
                                 </li>
                                 
