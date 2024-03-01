@@ -229,7 +229,7 @@ export default function DropFile(){
                   >
                     <img src={drop_icon} className="w-[200px] p-0" draggable="false"/>
                     <h2 className="text-5xl font-bold">Drop your files here</h2>
-                    <span className="text-gray-300 font-medium">Upload only PDF files</span>
+                    <span className="text-gray-300 font-medium">Upload only PNG,JPG files</span>
                     <input 
                         type="file"
                         multiple 
