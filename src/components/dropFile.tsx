@@ -2,6 +2,7 @@ import "./../App.css"
 import drop_icon from "../assets/drop.png"
 import pdf_icon from "../assets/pdf.png"
 import { useState,useRef } from "react"
+import ConvertToPdf from "./ConvertToPdf";
 
 
 
@@ -14,6 +15,15 @@ export default function DropFile(){
     const dragItem = useRef<any>(null)
     const dragOverItem= useRef<any>(null)
     var isItemSelected= 0 
+    const [showPdfDialog, setShowPdfDialog] = useState(false);
+
+    const openPdfDialog = () => {
+        setShowPdfDialog(true);
+    };
+
+    const closePdfDialog = () => {
+        setShowPdfDialog(false);
+    };
 
     function handleFileType(file: File): number {
         const fileType = file.type;
@@ -34,57 +44,56 @@ export default function DropFile(){
         event.preventDefault()
     }
 
-    
     const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault()
+        event.preventDefault();
         if(isItemSelected==0){
-
         if (event.dataTransfer.files) {
-            const newImgElements: (JSX.Element | null)[] = [];
-            Array.from(event.dataTransfer.files).forEach((file, index) => {
+            const newFiles = Array.from(event.dataTransfer.files);
+            const newImgElements: JSX.Element[] = [];
+            newFiles.forEach((file, index) => {
                 const fileType = handleFileType(file);
                 switch (fileType) {
                     case 0:
-                        newImgElements.push(
-                            <img src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"/>
-                            )
-                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
+                        newImgElements.push(<img key={index} src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"  />);
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
-                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
+                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]" />);
+                            if (newImgElements.length === newFiles.length) {
+                                setImgElements(prevImg => [...prevImg, ...newImgElements]);
+                                setFiles(prevFiles => [...prevFiles, ...newFiles]);
+                            }
                         };
+                        reader.readAsDataURL(file);
+                        break;
+                    default:
                         break;
                 }
-            });
-            setFiles(prevFiles => [...prevFiles, ...Array.from(event.dataTransfer.files)]);
-            console.log(imgElements)
-        }}
+            })};
+        }
     };
-        
+
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            const selectedFiles = event.target.files;
-            setFiles(prevFiles => [...prevFiles, ...Array.from(selectedFiles)]);
-            const newImgElements: (JSX.Element | null)[] = [];
-            Array.from(selectedFiles).forEach((file, index) => {
+            const selectedFiles = Array.from(event.target.files);
+            const newImgElements: JSX.Element[] = [];
+            selectedFiles.forEach((file, index) => {
                 const fileType = handleFileType(file);
                 switch (fileType) {
                     case 0:
-                        newImgElements.push(
-                            <img src={pdf_icon}  className="rounded-lg h-[180px] w-[150px]"/>
-                            )
-                        setImgElements(prevImg =>[...prevImg,...newImgElements]);
+                        newImgElements.push(<img key={index} src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"  />);
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
-                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
+                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]"  />);
+                            if (newImgElements.length === selectedFiles.length) {
+                                setImgElements(prevImg => [...prevImg, ...newImgElements]);
+                                setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
+                            }
                         };
                         reader.readAsDataURL(file);
                         break;
@@ -93,13 +102,10 @@ export default function DropFile(){
                 }
             });
         }
-        console.log(imgElements)
-
-    }
+    };
 
 
     const handleSort = () =>{
-        isItemSelected=1
         let _files = [...files]
         let _imgElements= [...imgElements]
 
@@ -134,7 +140,10 @@ export default function DropFile(){
 
     return (
 <>
-        
+{showPdfDialog && <ConvertToPdf onChange={closePdfDialog} />}
+
+            
+
             {files.length>0 ? (
                 <>
                 <input 
@@ -155,7 +164,7 @@ export default function DropFile(){
                 
                 <button 
                 className="px-8 py-3 rounded-lg bg-green-800 hover:bg-green-700 transition-all  text-white"
-                onClick={() => inputRef.current?.click()}
+                onClick={() => { setShowPdfDialog(true); }}
                 >
                 Compress them to PDF
                 </button>
@@ -171,7 +180,7 @@ export default function DropFile(){
                         {Array.from(files).map((file: any, id: number) => {
                             return (
                                 
-                                <li key={id} className="relative flex flex-col items-center justify-center h-fit transition-all" draggable onDragStart={(e)=>dragItem.current=id}  onDragEnter={(e)=>{dragOverItem.current=id; isItemSelected=1}} onDragOver={(e)=>e.preventDefault} onDragEnd={handleSort}>
+                                <li key={id} className="relative flex flex-col items-center justify-center h-fit transition-all" draggable onDragStart={(e)=>{dragItem.current=id; isItemSelected=1}}  onDragEnter={(e)=>{dragOverItem.current=id}} onDragOver={(e)=>e.preventDefault} onDragEnd={handleSort}>
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
                                     <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{ removeElement(id) }}>X</button> 
                                     {imgElements[id]} {}
@@ -183,7 +192,6 @@ export default function DropFile(){
                     </ul>
                 </div>
                 </div>
-
                 </>
             ) : (
                 
