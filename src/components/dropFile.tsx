@@ -48,28 +48,27 @@ export default function DropFile(){
                         newImgElements.push(
                             <img src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"/>
                             )
-                        setImgElements([...newImgElements]);
+                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
                             newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
-                            setImgElements([...newImgElements]);
+                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
                         };
-                        reader.readAsDataURL(file);
-                        break;
                         break;
                 }
             });
-            setFiles(Array.from(event.dataTransfer.files));
+            setFiles(prevFiles => [...prevFiles, ...Array.from(event.dataTransfer.files)]);
+            console.log(imgElements)
         }}
     };
         
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const selectedFiles = event.target.files;
-            setFiles(Array.from(selectedFiles));
+            setFiles(prevFiles => [...prevFiles, ...Array.from(selectedFiles)]);
             const newImgElements: (JSX.Element | null)[] = [];
             Array.from(selectedFiles).forEach((file, index) => {
                 const fileType = handleFileType(file);
@@ -78,14 +77,14 @@ export default function DropFile(){
                         newImgElements.push(
                             <img src={pdf_icon}  className="rounded-lg h-[180px] w-[150px]"/>
                             )
-                        setImgElements([...newImgElements]);
+                        setImgElements(prevImg =>[...prevImg,...newImgElements]);
                         break;
                     case 1:
                         const reader = new FileReader();
                         reader.onload = () => {
                             const imgData = reader.result as string;
                             newImgElements.push(<img key={index} src={imgData}  className="rounded-lg h-[180px] w-[150px]"/>);
-                            setImgElements([...newImgElements]);
+                            setImgElements(prevImg =>[...prevImg,...newImgElements]);
                         };
                         reader.readAsDataURL(file);
                         break;
@@ -94,6 +93,8 @@ export default function DropFile(){
                 }
             });
         }
+        console.log(imgElements)
+
     }
 
 
@@ -132,15 +133,39 @@ export default function DropFile(){
 
 
     return (
-
-
+<>
         
-        <div 
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            className="m-5 text-white w-[60vw] h-[400px] bg-black bg-opacity-[40%] rounded-xl border-slate-100 border-dashed border-2 hover:border-slate-500 border-spacing-1 transition-all shadow-xl shadow-slate-1000 flex items-center justify-center flex-col "
-        >
             {files.length>0 ? (
+                <>
+                <input 
+                type="file"
+                multiple 
+                onChange={handleFileInputChange}
+                hidden
+                ref={inputRef}
+                />
+                <div className="w-full flex items-center justify-center  gap-x-4">
+                <button 
+                className="px-8 py-3 rounded-lg bg-blue-800 hover:bg-blue-700 transition-all  text-white"
+                onClick={() => inputRef.current?.click()}
+                >
+                Upload more images
+                </button>
+
+                
+                <button 
+                className="px-8 py-3 rounded-lg bg-green-800 hover:bg-green-700 transition-all  text-white"
+                onClick={() => inputRef.current?.click()}
+                >
+                Compress them to PDF
+                </button>
+                </div>
+                <div 
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                 className="m-5 text-white w-[60vw] h-[400px] bg-black bg-opacity-[40%] rounded-xl border-slate-100 border-dashed border-2 hover:border-slate-500 border-spacing-1 transition-all shadow-xl shadow-slate-1000 flex items-center justify-center flex-col "
+                    >
+                        
                 <div className="w-full h-full p-5 bg-[rgba(0,0,0,0.1)] transition-all">
                     <ul className="w-full h-full p-5 grid grid-cols-4 gap-8 no-scrollbar overflow-scroll overflow-x-hidden">
                         {Array.from(files).map((file: any, id: number) => {
@@ -157,8 +182,16 @@ export default function DropFile(){
                         })}
                     </ul>
                 </div>
+                </div>
+
+                </>
             ) : (
-                <>
+                
+                <div 
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            className="m-5 text-white w-[60vw] h-[400px] bg-black bg-opacity-[40%] rounded-xl border-slate-100 border-dashed border-2 hover:border-slate-500 border-spacing-1 transition-all shadow-xl shadow-slate-1000 flex items-center justify-center flex-col "
+                  >
                     <img src={drop_icon} className="w-[200px] p-0" draggable="false"/>
                     <h2 className="text-5xl font-bold">Drop your files here</h2>
                     <span className="text-gray-300 font-medium">Upload only PDF files</span>
@@ -175,9 +208,9 @@ export default function DropFile(){
                     >
                         Upload Image
                     </button>
-                </>
+                </div>
             )}
-        </div>
+    </>
     );
 
 } 
