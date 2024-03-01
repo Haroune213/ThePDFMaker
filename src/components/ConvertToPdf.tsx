@@ -1,15 +1,22 @@
 import "./../App.css"
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { useState,useRef } from "react";
 
 
-const ConvertToPdf = ({ onChange, content }: { onChange: any, content: JSX.Element }) => {
+const ConvertToPdf = ({ onChange,onDownload }: { onChange: any, onDownload:any }) => {
+    const [pdfName, setPdfName]= useState("mypdf.pdf")
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const cancelPDF = () => {
-        onChange(true);
-    };
+        onChange(true)
+    }
 
-
-
+    const downloadPdf = () => {
+        if (inputRef.current) {
+          const newName = inputRef.current.value || 'mypdf.pdf'
+          setPdfName(newName)
+          onDownload(pdfName)
+        }
+      };
 
     return(
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-[rgba(0,0,0,0.7)] z-10  transition-all flex items-center justify-center">
@@ -18,11 +25,11 @@ const ConvertToPdf = ({ onChange, content }: { onChange: any, content: JSX.Eleme
             <h1 className="text-md font-medium text-gray-400 mb-5">Merge x elements into a single file </h1>
             <label htmlFor="title">Give your PDF a name</label>
             <br />
-            <input type="text" name="title" placeholder="mypdf.pdf"  className="rounded-lg bg-transparent my-2 border border-white outline-none p-2" />
+            <input type="text" name="title" ref={inputRef}  placeholder="mypdf.pdf"  className="rounded-lg bg-transparent my-2 border border-white outline-none p-2" />
 
             <div className="w-full flex items-center justify-start gap-x-6 mt-8">
             <button className=" text-md flex justify-center items-center rounded-md border border-white px-8 py-2 hover:bg-gray-600 hover:border-gray-600 transition-all" onClick={cancelPDF}>Cancel</button>
-            <button className=" text-md flex justify-center items-center rounded-md border border-blue-800 bg-blue-800 px-8 py-2 hover:bg-blue-700 transition-all">Download</button>
+            <button onClick={downloadPdf} className=" text-md flex justify-center items-center rounded-md border border-blue-800 bg-blue-800 px-8 py-2 hover:bg-blue-700 transition-all">Download</button>
 
             </div>
 

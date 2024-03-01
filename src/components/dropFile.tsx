@@ -2,107 +2,129 @@ import "./../App.css"
 import drop_icon from "../assets/drop.png"
 import pdf_icon from "../assets/pdf.png"
 import { useState,useRef } from "react"
-import ConvertToPdf from "./ConvertToPdf";
+import jsPDF from 'jspdf'
 
-
+import ConvertToPdf from "./ConvertToPdf"
 
 
 
 export default function DropFile(){
-    const[files, setFiles]=   useState<File[]>([]);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const [imgElements, setImgElements] = useState<(JSX.Element | null)[]>([]);
+    const[files, setFiles]=   useState<File[]>([])
+    const inputRef = useRef<HTMLInputElement>(null)
+    const [imgElements, setImgElements] = useState<(JSX.Element | null)[]>([])
+    const [showPdfDialog, setShowPdfDialog] = useState(false)
+    const [pdfName,setPdfName]= useState("")
+
     const dragItem = useRef<any>(null)
     const dragOverItem= useRef<any>(null)
     var isItemSelected= 0 
-    const [showPdfDialog, setShowPdfDialog] = useState(false);
-
-    const openPdfDialog = () => {
-        setShowPdfDialog(true);
-    };
 
     const closePdfDialog = () => {
-        setShowPdfDialog(false);
-    };
-
-    function handleFileType(file: File): number {
-        const fileType = file.type;
-        switch(fileType){
-            case 'application/pdf':
-                return 0;
-            case 'image/png':
-                return 1;
-            case 'image/jpeg':
-                return 1;
-            default:
-                return -1;
-        }
+        setShowPdfDialog(false)
     }
 
+    function handleFileType(file: File): number {
+        const fileType = file.type
+        switch(fileType){
+            case 'image/png':
+                return 1
+            case 'image/jpeg':
+                return 1
+            default:
+                return -1
+        }
+    }
+    
+    const handleDownload = () => {
+        const doc = new jsPDF('p', 'mm', 'a4')
+    
+        const pageWidth = doc.internal.pageSize.getWidth()
+    
+        files.forEach((file, index) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            const dataURL = reader.result as string
+            const img = new Image()
+            img.src = dataURL
+            img.onload = () => {
+              const aspectRatio = img.width / img.height
+              const imgWidth = pageWidth
+              const imgHeight = imgWidth / aspectRatio
+    
+              if (index > 0) {
+                doc.addPage()
+              }
+              doc.addImage(dataURL, 'JPEG', 0, 0, imgWidth, imgHeight)
+              if (index === files.length - 1) {
+                doc.save(pdfName+'.pdf')
+              }
+            }
+          }
+          reader.readAsDataURL(file)
+        })
+      }
+    
 
     const handleDragOver=(event:any)=>{ 
         event.preventDefault()
     }
 
     const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
+        event.preventDefault()
         if(isItemSelected==0){
         if (event.dataTransfer.files) {
-            const newFiles = Array.from(event.dataTransfer.files);
-            const newImgElements: JSX.Element[] = [];
+            const newFiles = Array.from(event.dataTransfer.files)
+            const newImgElements: JSX.Element[] = []
             newFiles.forEach((file, index) => {
-                const fileType = handleFileType(file);
+                const fileType = handleFileType(file)
                 switch (fileType) {
-                    case 0:
-                        newImgElements.push(<img key={index} src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"  />);
-                        break;
                     case 1:
-                        const reader = new FileReader();
+                        const reader = new FileReader()
                         reader.onload = () => {
-                            const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]" />);
+                            const imgData = reader.result as string
+                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]" />)
                             if (newImgElements.length === newFiles.length) {
-                                setImgElements(prevImg => [...prevImg, ...newImgElements]);
-                                setFiles(prevFiles => [...prevFiles, ...newFiles]);
+                                setImgElements(prevImg => [...prevImg, ...newImgElements])
+                                setFiles(prevFiles => [...prevFiles, ...newFiles])
                             }
-                        };
-                        reader.readAsDataURL(file);
-                        break;
+                        }
+                        reader.readAsDataURL(file)
+                        break
                     default:
-                        break;
+                        break
                 }
-            })};
+            })}
         }
-    };
+    }
 
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
-            const selectedFiles = Array.from(event.target.files);
-            const newImgElements: JSX.Element[] = [];
+            const selectedFiles = Array.from(event.target.files)
+            const newImgElements: JSX.Element[] = []
             selectedFiles.forEach((file, index) => {
-                const fileType = handleFileType(file);
+                const fileType = handleFileType(file)
                 switch (fileType) {
                     case 0:
-                        newImgElements.push(<img key={index} src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"  />);
-                        break;
+                        newImgElements.push(<img key={index} src={pdf_icon} className="rounded-lg h-[180px] w-[150px]"  />)
+                        break
                     case 1:
-                        const reader = new FileReader();
+                        const reader = new FileReader()
                         reader.onload = () => {
-                            const imgData = reader.result as string;
-                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]"  />);
+                            const imgData = reader.result as string
+                            newImgElements.push(<img key={index} src={imgData} className="rounded-lg h-[180px] w-[150px]"  />)
                             if (newImgElements.length === selectedFiles.length) {
-                                setImgElements(prevImg => [...prevImg, ...newImgElements]);
-                                setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
+                                setImgElements(prevImg => [...prevImg, ...newImgElements])
+                                setFiles(prevFiles => [...prevFiles, ...selectedFiles])
                             }
-                        };
-                        reader.readAsDataURL(file);
-                        break;
+                        }
+                        reader.readAsDataURL(file)
+                        break
                     default:
-                        break;
+                        break
                 }
-            });
+            })
         }
-    };
+    }
 
 
     const handleSort = () =>{
@@ -128,7 +150,7 @@ export default function DropFile(){
 
 
     const removeElement = (elem_id:number) => {
-        setImgElements(imgElements => imgElements.filter((_, index) => index !== elem_id));
+        setImgElements(imgElements => imgElements.filter((_, index) => index !== elem_id))
 
 
         setFiles((oldValues:any )=> {
@@ -138,9 +160,14 @@ export default function DropFile(){
       }
 
 
+      const giveNameToPDF= (value: string)=>{
+        setPdfName(value)
+        handleDownload()
+      }
+
     return (
 <>
-{showPdfDialog && <ConvertToPdf onChange={closePdfDialog} />}
+{showPdfDialog && <ConvertToPdf onChange={closePdfDialog} onDownload={giveNameToPDF}/>}
 
             
 
@@ -164,7 +191,7 @@ export default function DropFile(){
                 
                 <button 
                 className="px-8 py-3 rounded-lg bg-green-800 hover:bg-green-700 transition-all  text-white"
-                onClick={() => { setShowPdfDialog(true); }}
+                onClick={() => { setShowPdfDialog(true)}}
                 >
                 Compress them to PDF
                 </button>
@@ -180,14 +207,14 @@ export default function DropFile(){
                         {Array.from(files).map((file: any, id: number) => {
                             return (
                                 
-                                <li key={id} className="relative flex flex-col items-center justify-center h-fit transition-all" draggable onDragStart={(e)=>{dragItem.current=id; isItemSelected=1}}  onDragEnter={(e)=>{dragOverItem.current=id}} onDragOver={(e)=>e.preventDefault} onDragEnd={handleSort}>
+                                <li key={id} className="relative flex flex-col items-center justify-center h-fit transition-all" draggable onDragStart={()=>{dragItem.current=id; isItemSelected=1}}  onDragEnter={()=>{dragOverItem.current=id}} onDragOver={(e)=>e.preventDefault} onDragEnd={handleSort}>
                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center absolute -top-3 -left-2 shadow-slate-900 shadow-md">{id}</div>
                                     <button className="p-3 w-4 h-4 bg-red-600 rounded-full flex items-center justify-center absolute top-1 right-2" onClick={()=>{ removeElement(id) }}>X</button> 
                                     {imgElements[id]} {}
                                     {file.name.length > 14 ? file.name.slice(0, 14) + "..." : file.name}
                                 </li>
                                 
-                            );
+                            )
                         })}
                     </ul>
                 </div>
@@ -218,7 +245,11 @@ export default function DropFile(){
                     </button>
                 </div>
             )}
+
+            <div className="absolute top-120vw ">
+
+            </div>
     </>
-    );
+    )
 
 } 
